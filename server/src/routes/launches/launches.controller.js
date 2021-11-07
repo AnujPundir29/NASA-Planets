@@ -1,6 +1,7 @@
 const {
     getAllLaunches,
-    addNewLaunch,
+    // addNewLaunch,
+    scheduleNewLaunch,
     existsLaunchWithId,
     abortLaunch
 } = require('../../models/launches.model');
@@ -9,7 +10,7 @@ async function httpGetAllLaunches(req, res) {
     res.json(await getAllLaunches());
 }
 
-function httpAddNewLaunch(req, res) {
+async function httpAddNewLaunch(req, res) {
     const launch = req.body;
     if (
         !launch.mission ||
@@ -28,8 +29,8 @@ function httpAddNewLaunch(req, res) {
             error: 'Invalid date'
         });
     }
-
-    return res.json(addNewLaunch(launch));
+    await scheduleNewLaunch(launch);
+    return res.json(launch);
 }
 
 function httpAbortLaunch(req, res) {
