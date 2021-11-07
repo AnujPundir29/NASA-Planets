@@ -1,7 +1,6 @@
 const launchesDatabase = require('./launches.mongo');
 const planets = require('./planets.mongo');
 
-const launches = new Map();
 const DEF_FLIGHT_NUM = 100;
 
 const launch = {
@@ -14,8 +13,6 @@ const launch = {
     upcoming: true,
     success: true,
 }
-
-// launches.set(launch.flightNumber, launch);
 
 async function getLatestFlightNumber() {
     const latestLaunch = await launchesDatabase.findOne().sort('-flightNumber');
@@ -30,7 +27,7 @@ async function saveLaunch(launch) {
     if (!planet) {
         throw new Error('Planet which is target is not matching with the database');
     }
-    await launchesDatabase.updateOne({
+    await launchesDatabase.findOneAndUpdate({ // only includes the properties we inserted not additional
             flightNumber: launch.flightNumber, //if found with the flight number then update the next value otherwise insert a new one
         },
         launch, {
@@ -40,8 +37,10 @@ async function saveLaunch(launch) {
 
 saveLaunch(launch);
 
-function existsLaunchWithId(launchId) {
-    return launches.has(launchId);
+async function existsLaunchWithId(launchId) {
+    return await launchesDatabase.findOne({
+        flightNumber: launchId
+    });
 }
 
 async function getAllLaunches() {
@@ -71,12 +70,20 @@ async function scheduleNewLaunch(launch) {
 //     }));
 // }
 
-function abortLaunch(flightNumber) {
-    if (launches.has(flightNumber)) {
-        const launch = launches.get(flightNumber);
-        launch.upcoming = false;
-        launch.success = false;
-    }
+async function abortLaunch(flightNumber) {
+    // if (launches.has(flightNumber)) {
+    //     const launch = launches.get(flightNumber);
+    //     launch.upcoming = false;
+    //     launch.success = false;
+    // }
+    const aborted = await launchesDatabase.updateOne({
+        flightNumber: flightNumber,
+    }, {
+        upcoming: false,
+        success: false,
+    });
+
+    return aborted.acknowledged === true && aborted.modifiedCount === 1;
 }
 
 module.exports = {
