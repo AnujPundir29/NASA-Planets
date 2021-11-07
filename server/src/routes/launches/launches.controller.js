@@ -5,8 +5,8 @@ const {
     abortLaunch
 } = require('../../models/launches.model');
 
-function httpGetAllLaunches(req, res) {
-    res.json(getAllLaunches());
+async function httpGetAllLaunches(req, res) {
+    res.json(await getAllLaunches());
 }
 
 function httpAddNewLaunch(req, res) {

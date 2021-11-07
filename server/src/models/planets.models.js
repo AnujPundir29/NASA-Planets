@@ -53,7 +53,7 @@ function loadPlanetsData() {
 }
 
 async function getAllPlanets() {
-    return await planets.find({});
+    return await planets.find({},'-__v -_id');
 }
 
 module.exports = {

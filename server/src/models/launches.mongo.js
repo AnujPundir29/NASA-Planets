@@ -5,6 +5,10 @@ const launchesSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    mission: {
+        type: String,
+        required: true,
+    },
     launchDate: {
         type: Date,
         required: true,
@@ -17,7 +21,9 @@ const launchesSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    customers: [String],
+    customers: {
+        type: [String],
+    },
     upcoming: {
         type: Boolean,
         required: true
@@ -32,4 +38,4 @@ const launchesSchema = new mongoose.Schema({
 
 
 //connects launchesSchema with the launches collection
-module.exports = mongoose.model('Launch',launchesSchema);
+module.exports = mongoose.model('Launch', launchesSchema);
