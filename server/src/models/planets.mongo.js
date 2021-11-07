@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
-const PlanetSchema = new mongoose.Schema({
-    kepler_name:{
+const planetSchema = new mongoose.Schema({
+    kepler_name: {
         type: String,
-        required:true,
+        required: true,
     }
-})
+});
+
+module.exports = mongoose.model('Planet', planetSchema);
