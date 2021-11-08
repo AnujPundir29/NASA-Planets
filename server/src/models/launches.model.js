@@ -1,18 +1,64 @@
 const launchesDatabase = require('./launches.mongo');
 const planets = require('./planets.mongo');
+const axios = require('axios');
 
+const SPACEX_API_URL = 'https://api.spacexdata.com/v4/launches/query';
 const DEF_FLIGHT_NUM = 100;
 
 const launch = {
-    flightNumber: 100,
-    mission: 'Kepler Exploration X',
-    rocket: 'Explorer IS1',
-    launchDate: new Date('December 29, 2021'),
-    target: 'Kepler-442 b',
-    customers: ['Anuj', 'NASA'],
-    upcoming: true,
-    success: true,
+    flightNumber: 100, // flight_number
+    mission: 'Kepler Exploration X', // name
+    rocket: 'Explorer IS1', // rocket.name
+    launchDate: new Date('December 29, 2021'), // date_local
+    target: 'Kepler-442 b', // NA
+    customers: ['Anuj', 'NASA'], // payloads.customers for each payload
+    upcoming: true, // upcoming
+    success: true, // success
 }
+
+async function loadLaunchesData() {
+    console.log('Downloading SpaceX Data');
+    const response = await axios.post(SPACEX_API_URL, {
+        // querying the data
+        query: {},
+        options: {
+            // page : 1,
+            // limit : 142,
+            pagination: false,
+            populate: [{
+                    path: 'rocket',
+                    select: 'name'
+                },
+                {
+                    path: 'payloads',
+                    select: 'customers'
+                }
+            ]
+        }
+    });
+
+    const launchDocs = response.data.docs;
+
+    for (const launchDoc of launchDocs) {
+        const payloads = launchDoc['payloads'];
+        const customers = payloads.flatMap((payload) => { // flatMap is used to combine set of different customers 
+            return payload['customers'] // of different payload into one
+        });
+        const newLaunch = {
+            flightNumber: launchDoc['flight_number'],
+            mission: launchDoc['name'],
+            rocket: launchDoc['rocket']['name'],
+            launchDate: launchDoc['date_local'],
+            // target: launchDoc['s'],
+            customers: customers,
+            upcoming: launchDoc['upcoming'],
+            success: launchDoc['success']
+        }
+
+        await saveLaunch(newLaunch);
+    }
+}
+
 
 async function getLatestFlightNumber() {
     const latestLaunch = await launchesDatabase.findOne().sort('-flightNumber');
@@ -87,6 +133,7 @@ async function abortLaunch(flightNumber) {
 }
 
 module.exports = {
+    loadLaunchesData,
     existsLaunchWithId,
     getAllLaunches,
     // addNewLaunch,
