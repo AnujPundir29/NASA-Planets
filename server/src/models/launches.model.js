@@ -37,6 +37,11 @@ async function populateLaunches() {
         }
     });
 
+    if (response.statusCode !== 200) {
+        console.log(`Problem loading SpaceX data ${response.ok}`);
+        throw new Error('Problem loading SpaceX data');
+    }
+
     const launchDocs = response.data.docs;
     for (const launchDoc of launchDocs) {
         const payloads = launchDoc['payloads'];
@@ -52,12 +57,18 @@ async function populateLaunches() {
             upcoming: launchDoc['upcoming'],
             success: launchDoc['success']
         }
-       await saveLaunch(newLaunch);
+        await saveLaunch(newLaunch);
     }
 }
 
 async function loadLaunchesData() {
-    await populateLaunches();
+    const filter = {
+        flightNumber:1,
+        rocket:"Falcon 1",
+        mission:"FalconSat",
+    }
+    if(!(await findLaunch(filter))) 
+        await populateLaunches();
 }
 
 async function findLaunch(filter) {
@@ -86,8 +97,11 @@ async function existsLaunchWithId(launchId) {
     });
 }
 
-async function getAllLaunches() {
-    return await launchesDatabase.find({}, '-_id -__v ');
+async function getAllLaunches(limit,skip) {
+    return await launchesDatabase
+        .find({}, '-_id -__v ')
+        .skip(skip)  // skips the docs
+        .limit(limit);  // set the limit for page
 }
 
 async function scheduleNewLaunch(launch) {
