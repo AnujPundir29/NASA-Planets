@@ -1,10 +1,17 @@
 const request = require('supertest');
 const app = require('../../app');
-const {connectDatabase, disconnectDatabase}= require('../../services/mongo');
+const {
+    connectDatabase,
+    disconnectDatabase
+} = require('../../services/mongo');
+const {
+    loadPlanetsData
+} = require('../../models/planets.models');
 
-describe('NASA API',() => {
+describe('NASA API', () => {
     beforeAll(async () => {
         await connectDatabase();
+        await loadPlanetsData();
     })
 
     afterAll(async () => {
@@ -19,7 +26,7 @@ describe('NASA API',() => {
             // expect(response.statusCode).toBe(200);
         });
     });
-    
+
     describe('Test POST /launch', () => {
         const comleteLaunchData = {
             mission: 'USS Enterprice',
@@ -27,13 +34,13 @@ describe('NASA API',() => {
             target: 'Kepler-62 f',
             launchDate: 'January 4, 2028',
         }
-    
+
         const launchDataWithoutDate = {
             mission: 'USS Enterprice',
             rocket: 'NCC 1701-D',
             target: 'Kepler-62 f',
         }
-    
+
         const launchDataWithInvalidDate = {
             mission: 'USS Enterprice',
             rocket: 'NCC 1701-D',
@@ -46,34 +53,33 @@ describe('NASA API',() => {
                 .send(comleteLaunchData)
                 .expect('Content-Type', /json/)
                 .expect(201);
-    
+
             const requestDate = new Date(comleteLaunchData.launchDate).valueOf();
             const responseDate = new Date(response.body.launchDate).valueOf();
-    
+
             expect(responseDate).toBe(requestDate);
             expect(response.body).toMatchObject(launchDataWithoutDate);
         });
-        test('It should catch for missing attributes',async () => {
+        test('It should catch for missing attributes', async () => {
             const response = await request(app)
                 .post('/v1/launches')
                 .send(launchDataWithoutDate)
                 .expect(400);
-    
+
             expect(response.body).toStrictEqual({
                 error: `Missing required launch property`,
             });
-    
+
         });
-        test('It should catch for valid date',async () => {
+        test('It should catch for valid date', async () => {
             const response = await request(app)
                 .post('/v1/launches')
                 .send(launchDataWithInvalidDate)
                 .expect(400);
-    
+
             expect(response.body).toStrictEqual({
                 error: 'Invalid date'
             });
         });
     });
 })
-
