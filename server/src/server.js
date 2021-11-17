@@ -1,4 +1,5 @@
 const http = require('http');
+require('dotenv').config();   // this will get import here and all the file which server.js is requiring.
 const app = require('./app');
 const {connectDatabase} = require('./services/mongo');
 const {loadLaunchesData} = require('./models/launches.model');

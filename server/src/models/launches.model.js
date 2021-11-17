@@ -63,11 +63,11 @@ async function populateLaunches() {
 
 async function loadLaunchesData() {
     const filter = {
-        flightNumber:1,
-        rocket:"Falcon 1",
-        mission:"FalconSat",
+        flightNumber: 1,
+        rocket: "Falcon 1",
+        mission: "FalconSat",
     }
-    if(!(await findLaunch(filter))) 
+    if (!(await findLaunch(filter)))
         await populateLaunches();
 }
 
@@ -97,11 +97,12 @@ async function existsLaunchWithId(launchId) {
     });
 }
 
-async function getAllLaunches(limit,skip) {
+async function getAllLaunches(limit, skip) {
     return await launchesDatabase
         .find({}, '-_id -__v ')
-        .skip(skip)  // skips the docs
-        .limit(limit);  // set the limit for page
+        .sort('flightNumber')
+        .skip(skip) // skips the docs
+        .limit(limit); // set the limit for page
 }
 
 async function scheduleNewLaunch(launch) {
