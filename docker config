@@ -1,7 +1,7 @@
-1. docker build . -t anuj/nasa-project
+1. docker build . -t anuj29/nasa-project
 
-2. docker run -it -p 8000:8000 anuj/nasa-project
+2. docker run -it -p 8000:8000 anuj29/nasa-project
 
 3. docker login
 
-4. docker push anuj/nasa-project
+4. docker push anuj29/nasa-project
